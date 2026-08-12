@@ -40,8 +40,21 @@ export class IncidentsService {
   }
 
   async create(dto: CreateIncidentDto, userId?: string) {
+    // §15 AI/CV verification rule: AI/CV detections do not automatically become critical without verification
+    let severity = dto.severity;
+    let status = 'REPORTED';
+
+    if (dto.source === 'AI_CV' && dto.severity === 'CRITICAL') {
+      severity = 'HIGH'; // Downgraded to HIGH pending manual/multi-sensor authority verification
+      status = 'PENDING_VERIFICATION';
+    }
+
     const incident = await this.prisma.incident.create({
-      data: dto,
+      data: {
+        ...dto,
+        severity,
+        status,
+      },
       include: {
         intersection: true,
       },
@@ -52,7 +65,7 @@ export class IncidentsService {
       'CREATE_INCIDENT',
       'Incident',
       incident.id,
-      { severity: incident.severity, type: incident.type },
+      { severity: incident.severity, type: incident.type, source: dto.source },
     );
 
     this.eventsGateway.broadcastIncidentCreated(incident);
