@@ -353,3 +353,16 @@ model DataSource {
   @@map("data_sources")
 }
 
+model WeatherObservation {
+  id          String   @id @default(uuid())
+  location    String
+  condition   String
+  temperature Float
+  rainfall    Float
+  visibility  Float
+  observedAt  DateTime @default(now()) @map("observed_at")
+
+  @@map("weather_observations")
+}
+
+
