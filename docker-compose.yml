@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart_traffic_backend
+    ports:
+      - '3000:3000'
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://traffic_user:traffic_pass@postgres:5432/smart_traffic?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=sih_smart_traffic_super_secret_jwt_key_2026
+      - JWT_EXPIRATION=1d
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart_traffic_postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: traffic_user
+      POSTGRES_PASSWORD: traffic_pass
+      POSTGRES_DB: smart_traffic
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: smart_traffic_redis
+    ports:
+      - '6379:6379'
+    restart: always
+
+  ai-service:
+    build:
+      context: ../ai-service
+      dockerfile: Dockerfile
+    container_name: smart_traffic_ai_service
+    ports:
+      - '8000:8000'
+    environment:
+      - PORT=8000
+      - NODE_ENV=production
+    restart: always
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: smart_traffic_frontend
+    ports:
+      - '5173:5173'
+    environment:
+      - VITE_API_URL=http://localhost:3000/api/v1
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:
