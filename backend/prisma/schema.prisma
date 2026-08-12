@@ -328,3 +328,28 @@ model Notification {
 
   @@map("notifications")
 }
+
+model Report {
+  id             String   @id @default(uuid())
+  type           String
+  parametersJson String   @map("parameters_json")
+  status         String   @default("COMPLETED")
+  filePath       String?  @map("file_path")
+  generatedBy    String   @map("generated_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("reports")
+}
+
+model DataSource {
+  id                 String    @id @default(uuid())
+  name               String
+  organization       String
+  sourceUrl          String    @map("source_url")
+  type               String
+  verificationStatus String    @map("verification_status")
+  lastCheckedAt      DateTime? @map("last_checked_at")
+
+  @@map("data_sources")
+}
+
