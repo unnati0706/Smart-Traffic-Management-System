@@ -1,0 +1,330 @@
+// Prisma Schema for Smart Traffic Management System Backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  roleId    String   @map("role_id")
+  status    String   @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  citizenReports CitizenReport[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+
+  @@map("users")
+}
+
+model Role {
+  id   String @id @default(uuid())
+  name String @unique // CITIZEN, TRAFFIC_AUTHORITY, ADMIN
+
+  users           User[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id   String @id @default(uuid())
+  name String @unique
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Road {
+  id        String @id @default(uuid())
+  name      String
+  code      String @unique
+  geometry  String // GeoJSON string or coordinate list
+  laneCount Int    @map("lane_count")
+  capacity  Int
+  status    String @default("OPERATIONAL")
+
+  intersections Intersection[]
+
+  @@map("roads")
+}
+
+model Intersection {
+  id        String @id @default(uuid())
+  roadId    String @map("road_id")
+  name      String
+  latitude  Float
+  longitude Float
+  status    String @default("ACTIVE")
+
+  road                Road                       @relation(fields: [roadId], references: [id])
+  signals             Signal[]
+  trafficObservations TrafficObservation[]
+  vehicleDetections   VehicleDetection[]
+  incidents           Incident[]
+  predictions         Prediction[]
+  recommendations     SignalRecommendation[]
+  corridorNodes       GreenCorridorIntersection[]
+
+  @@map("intersections")
+}
+
+model Signal {
+  id             String @id @default(uuid())
+  intersectionId String @map("intersection_id")
+  controllerName String @map("controller_name")
+  currentPhase   Int    @map("current_phase")
+  cycleLength    Int    @map("cycle_length")
+  status         String @default("OPERATIONAL")
+
+  intersection Intersection  @relation(fields: [intersectionId], references: [id])
+  phases       SignalPhase[]
+
+  @@map("signals")
+}
+
+model SignalPhase {
+  id             String @id @default(uuid())
+  signalId       String @map("signal_id")
+  phaseNumber    Int    @map("phase_number")
+  movement       String
+  minGreen       Int    @map("min_green")
+  maxGreen       Int    @map("max_green")
+  yellowDuration Int    @map("yellow_duration")
+  currentGreen   Int    @map("current_green")
+
+  signal Signal @relation(fields: [signalId], references: [id])
+
+  @@map("signal_phases")
+}
+
+model TrafficObservation {
+  id             String   @id @default(uuid())
+  intersectionId String   @map("intersection_id")
+  source         String // SENSOR, CAMERA, SIMULATED
+  vehicleCount   Int      @map("vehicle_count")
+  averageSpeed   Float    @map("average_speed")
+  density        Float
+  queueLength    Float    @map("queue_length")
+  laneOccupancy  Float    @map("lane_occupancy")
+  observedAt     DateTime @default(now()) @map("observed_at")
+
+  intersection Intersection @relation(fields: [intersectionId], references: [id])
+
+  @@map("traffic_observations")
+}
+
+model VehicleDetection {
+  id             String   @id @default(uuid())
+  intersectionId String   @map("intersection_id")
+  source         String
+  vehicleClass   String   @map("vehicle_class")
+  confidence     Float
+  trackId        String   @map("track_id")
+  x              Float
+  y              Float
+  width          Float
+  height         Float
+  detectedAt     DateTime @default(now()) @map("detected_at")
+
+  intersection Intersection @relation(fields: [intersectionId], references: [id])
+
+  @@map("vehicle_detections")
+}
+
+model Incident {
+  id             String    @id @default(uuid())
+  type           String // ACCIDENT, ROAD_WORK, CONGESTION, WEATHER, HAZARD
+  intersectionId String    @map("intersection_id")
+  latitude       Float
+  longitude      Float
+  severity       String // LOW, MEDIUM, HIGH, CRITICAL
+  source         String // CITIZEN, AUTHORITY, AI_CV
+  description    String
+  status         String    @default("REPORTED") // REPORTED, IN_PROGRESS, RESOLVED
+  reportedAt     DateTime  @default(now()) @map("reported_at")
+  resolvedAt     DateTime? @map("resolved_at")
+
+  intersection   Intersection    @relation(fields: [intersectionId], references: [id])
+  citizenReports CitizenReport[]
+
+  @@map("incidents")
+}
+
+model CitizenReport {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  incidentId  String?  @map("incident_id")
+  type        String
+  latitude    Float
+  longitude   Float
+  description String
+  imagePath   String?  @map("image_path")
+  status      String   @default("SUBMITTED") // SUBMITTED, VERIFIED, REJECTED, INCIDENT_CREATED
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user     User?     @relation(fields: [userId], references: [id])
+  incident Incident? @relation(fields: [incidentId], references: [id])
+
+  @@map("citizen_reports")
+}
+
+model Prediction {
+  id                    String   @id @default(uuid())
+  intersectionId        String   @map("intersection_id")
+  horizonMinutes        Int      @map("horizon_minutes")
+  predictedDensity      Float    @map("predicted_density")
+  predictedQueue        Float    @map("predicted_queue")
+  congestionProbability Float    @map("congestion_probability")
+  confidence            Float
+  factorsJson           String   @map("factors_json")
+  generatedAt           DateTime @default(now()) @map("generated_at")
+
+  intersection Intersection           @relation(fields: [intersectionId], references: [id])
+  recommendations SignalRecommendation[]
+
+  @@map("predictions")
+}
+
+model SignalRecommendation {
+  id                   String   @id @default(uuid())
+  intersectionId       String   @map("intersection_id")
+  predictionId         String?  @map("prediction_id")
+  currentPlanJson      String   @map("current_plan_json")
+  recommendedPlanJson  String   @map("recommended_plan_json")
+  reason               String
+  confidence           Float
+  status               String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdBy            String?  @map("created_by")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  intersection Intersection @relation(fields: [intersectionId], references: [id])
+  prediction   Prediction?  @relation(fields: [predictionId], references: [id])
+
+  @@map("signal_recommendations")
+}
+
+model EmergencyVehicle {
+  id                   String   @id @default(uuid())
+  type                 String // AMBULANCE, FIRE_TRUCK, POLICE
+  identifier           String   @unique
+  latitude             Float
+  longitude            Float
+  destinationLatitude  Float    @map("destination_latitude")
+  destinationLongitude Float    @map("destination_longitude")
+  status               String   @default("IDLE") // IDLE, DISPATCHED, IN_TRANSIT, ARRIVED
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  greenCorridors GreenCorridor[]
+
+  @@map("emergency_vehicles")
+}
+
+model GreenCorridor {
+  id                 String   @id @default(uuid())
+  emergencyVehicleId String   @map("emergency_vehicle_id")
+  origin             String
+  destination        String
+  normalEtaSeconds   Int      @map("normal_eta_seconds")
+  optimizedEtaSeconds Int     @map("optimized_eta_seconds")
+  timeSavedSeconds   Int      @map("time_saved_seconds")
+  status             String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  emergencyVehicle EmergencyVehicle            @relation(fields: [emergencyVehicleId], references: [id])
+  intersections    GreenCorridorIntersection[]
+
+  @@map("green_corridors")
+}
+
+model GreenCorridorIntersection {
+  id                  String @id @default(uuid())
+  greenCorridorId     String @map("green_corridor_id")
+  intersectionId      String @map("intersection_id")
+  sequence            Int
+  recommendedPhase    Int    @map("recommended_phase")
+  recommendedDuration Int    @map("recommended_duration")
+
+  greenCorridor GreenCorridor @relation(fields: [greenCorridorId], references: [id])
+  intersection  Intersection  @relation(fields: [intersectionId], references: [id])
+
+  @@map("green_corridor_intersections")
+}
+
+model SimulationRun {
+  id             String    @id @default(uuid())
+  scenario       String // NORMAL, INCREASED_TRAFFIC, ACCIDENT, HEAVY_RAIN, ROAD_CLOSURE, FESTIVAL, EMERGENCY
+  intersectionId String?   @map("intersection_id")
+  parametersJson String    @map("parameters_json")
+  status         String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  startedAt      DateTime  @default(now()) @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+
+  results SimulationResult[]
+
+  @@map("simulation_runs")
+}
+
+model SimulationResult {
+  id              String @id @default(uuid())
+  simulationRunId String @map("simulation_run_id")
+  metric          String
+  beforeValue     Float  @map("before_value")
+  afterValue      Float  @map("after_value")
+  unit            String
+
+  simulationRun SimulationRun @relation(fields: [simulationRunId], references: [id])
+
+  @@map("simulation_results")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  action       String
+  entityType   String   @map("entity_type")
+  entityId     String   @map("entity_id")
+  metadataJson String?  @map("metadata_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  type      String
+  title     String
+  message   String
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
