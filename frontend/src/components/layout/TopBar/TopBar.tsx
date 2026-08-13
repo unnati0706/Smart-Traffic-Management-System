@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, User as UserIcon } from 'lucide-react';
 import { Button } from '../../ui/Button/Button';
+import { NotificationCenter } from '../../ui/NotificationCenter/NotificationCenter';
 import { useAuth } from '../../../features/auth/AuthContext';
 import { socketManager } from '../../../services/websocket/socketManager';
 import styles from './TopBar.module.css';
@@ -31,6 +32,8 @@ export const TopBar: React.FC<TopBarProps> = ({ title = 'Authority Command Cente
           <span className={`${styles.statusDot} ${isConnected ? styles.connected : styles.disconnected}`} />
           <span>{isConnected ? 'LIVE WS STREAM' : 'SOCKET POLLING'}</span>
         </div>
+
+        <NotificationCenter />
 
         <div className={styles.userInfo}>
           <UserIcon size={18} color="var(--color-text-secondary)" />
