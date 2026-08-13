@@ -1,0 +1,61 @@
+.drawerBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.statusHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.statItem {
+  background-color: var(--color-bg-surface-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-3);
+}
+
+.statLabel {
+  font-size: var(--font-size-metadata);
+  color: var(--color-text-muted);
+}
+
+.statValue {
+  font-size: var(--font-size-card);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-top: var(--space-1);
+}
+
+.signalBox {
+  background-color: var(--color-bg-surface-hover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-4);
+}
+
+.signalRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-table);
+  margin-bottom: var(--space-2);
+}
