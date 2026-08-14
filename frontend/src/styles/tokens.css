@@ -89,3 +89,18 @@
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 200ms ease-in-out;
 }
+
+[data-theme="high-contrast"] {
+  --color-bg-app: #000000;
+  --color-bg-surface: #000000;
+  --color-bg-surface-hover: #1a1a1a;
+  --color-bg-input: #000000;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #e5e7eb;
+  --color-border: #ffffff;
+  --color-border-subtle: #ffffff;
+  --color-primary: #facc15;
+  --color-on-primary: #000000;
+  --color-status-normal: #22c55e;
+  --color-status-severe: #ff0000;
+}

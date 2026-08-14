@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as RadixTabs from '@radix-ui/react-tabs';
-import { Settings as SettingsIcon, Shield, Check, Link2, Key } from 'lucide-react';
+import { Settings as SettingsIcon, Check, Sun, Moon, Contrast } from 'lucide-react';
 import { Button } from '../../components/ui/Button/Button';
 import { Input } from '../../components/ui/Input/Input';
 import styles from './Settings.module.css';
 
 export const Settings: React.FC = () => {
   const [saveMessage, setSaveMessage] = useState(false);
+  const [themeMode, setThemeMode] = useState<'dark' | 'high-contrast'>(() => {
+    return (localStorage.getItem('app_theme') as 'dark' | 'high-contrast') || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', themeMode);
+    localStorage.setItem('app_theme', themeMode);
+  }, [themeMode]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +27,7 @@ export const Settings: React.FC = () => {
       <div className={styles.header}>
         <h1 className={styles.title}>Command Center System Settings</h1>
         <p className={styles.subtitle}>
-          Role-aware system parameters, notification webhooks, and security access controls.
+          Role-aware system parameters, theme customization, notification webhooks, and access controls.
         </p>
       </div>
 
@@ -27,6 +35,9 @@ export const Settings: React.FC = () => {
         <RadixTabs.List className={styles.tabList}>
           <RadixTabs.Trigger value="general" className={styles.tabTrigger}>
             General Parameters
+          </RadixTabs.Trigger>
+          <RadixTabs.Trigger value="appearance" className={styles.tabTrigger}>
+            Display & High Contrast Mode
           </RadixTabs.Trigger>
           <RadixTabs.Trigger value="webhooks" className={styles.tabTrigger}>
             Integrations & Webhooks
@@ -53,6 +64,32 @@ export const Settings: React.FC = () => {
               </span>
             )}
           </form>
+        </RadixTabs.Content>
+
+        <RadixTabs.Content value="appearance" className={styles.tabContent}>
+          <div className={styles.card}>
+            <div style={{ fontSize: 'var(--font-size-card)', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>
+              Command Center Visual Interface Mode
+            </div>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-body)' }}>
+              Toggle between standard dark command center theme and high-contrast emergency room visibility mode.
+            </p>
+
+            <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
+              <Button
+                variant={themeMode === 'dark' ? 'primary' : 'outline'}
+                onClick={() => setThemeMode('dark')}
+              >
+                <Moon size={16} /> Standard Dark Command Mode
+              </Button>
+              <Button
+                variant={themeMode === 'high-contrast' ? 'primary' : 'outline'}
+                onClick={() => setThemeMode('high-contrast')}
+              >
+                <Contrast size={16} /> High-Contrast Emergency Mode
+              </Button>
+            </div>
+          </div>
         </RadixTabs.Content>
 
         <RadixTabs.Content value="webhooks" className={styles.tabContent}>
