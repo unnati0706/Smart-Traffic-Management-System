@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Cpu, Check, Edit, ShieldAlert } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Check, Edit, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '../../components/ui/Button/Button';
 import { TrafficStatusBadge } from '../../components/ui/TrafficStatusBadge/TrafficStatusBadge';
 import { Dialog } from '../../components/ui/Dialog/Dialog';
 import { Input } from '../../components/ui/Input/Input';
+import { socketManager } from '../../services/websocket/socketManager';
+import styles from './SmartSignals.module.css';
 
 interface SignalRow {
   id: string;
@@ -25,6 +27,23 @@ const MOCK_SIGNALS: SignalRow[] = [
 export const SmartSignals: React.FC = () => {
   const [signals, setSignals] = useState<SignalRow[]>(MOCK_SIGNALS);
   const [editSignal, setEditSignal] = useState<SignalRow | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
+
+  useEffect(() => {
+    socketManager.connect();
+    const unsubStatus = socketManager.onStatusChange(setWsConnected);
+
+    const unsubSignalUpdate = socketManager.subscribe('signal_updated', (data: Partial<SignalRow> & { id: string }) => {
+      setSignals((prev) =>
+        prev.map((s) => (s.id === data.id ? { ...s, ...data } : s))
+      );
+    });
+
+    return () => {
+      unsubStatus();
+      unsubSignalUpdate();
+    };
+  }, []);
 
   const handleModeChange = (id: string, mode: 'FIXED' | 'ADAPTIVE_AI' | 'MANUAL_OVERRIDE') => {
     setSignals((prev) => prev.map((s) => (s.id === id ? { ...s, mode } : s)));
@@ -47,57 +66,49 @@ export const SmartSignals: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h1 style={{ fontSize: 'var(--font-size-title)', fontWeight: 'bold' }}>Smart Signal Controller Inventory</h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-          Adaptive AI timing configuration and manual emergency override control panel.
-        </p>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div>
+          <h1 className={styles.title}>Smart Signal Controller Inventory</h1>
+          <p className={styles.subtitle}>
+            Adaptive AI timing configuration and manual emergency override control panel.
+          </p>
+        </div>
+        <div className={styles.wsIndicator}>
+          {wsConnected ? (
+            <span style={{ color: 'var(--color-status-normal)', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
+              <Wifi size={16} /> Live Gateway Connected
+            </span>
+          ) : (
+            <span style={{ color: 'var(--color-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <WifiOff size={16} /> Gateway Standby
+            </span>
+          )}
+        </div>
       </div>
 
-      <div
-        style={{
-          backgroundColor: 'var(--color-bg-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--border-radius-md)',
-          overflow: 'hidden',
-        }}
-      >
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
           <thead>
-            <tr
-              style={{
-                backgroundColor: 'var(--color-bg-surface-hover)',
-                borderBottom: '1px solid var(--color-border)',
-                fontSize: 'var(--font-size-label)',
-                color: 'var(--color-text-secondary)',
-                textTransform: 'uppercase',
-              }}
-            >
-              <th style={{ padding: 'var(--space-4)' }}>Signal Node</th>
-              <th style={{ padding: 'var(--space-4)' }}>Flow State</th>
-              <th style={{ padding: 'var(--space-4)' }}>Control Mode</th>
-              <th style={{ padding: 'var(--space-4)' }}>Allocated Cycle (N-S / E-W)</th>
-              <th style={{ padding: 'var(--space-4)' }}>AI Recommendation</th>
-              <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Actions</th>
+            <tr className={styles.tableHeader}>
+              <th className={styles.cell}>Signal Node</th>
+              <th className={styles.cell}>Flow State</th>
+              <th className={styles.cell}>Control Mode</th>
+              <th className={styles.cell}>Allocated Cycle (N-S / E-W)</th>
+              <th className={styles.cell}>AI Recommendation</th>
+              <th className={styles.cellRight}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {signals.map((sig) => (
-              <tr key={sig.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', fontSize: 'var(--font-size-table)' }}>
-                <td style={{ padding: 'var(--space-4)', fontWeight: 'bold' }}>{sig.name}</td>
-                <td style={{ padding: 'var(--space-4)' }}>
+              <tr key={sig.id} className={styles.tableRow}>
+                <td className={styles.cell} style={{ fontWeight: 'bold' }}>{sig.name}</td>
+                <td className={styles.cell}>
                   <TrafficStatusBadge status={sig.status} showIcon={false} />
                 </td>
-                <td style={{ padding: 'var(--space-4)' }}>
+                <td className={styles.cell}>
                   <select
-                    style={{
-                      backgroundColor: 'var(--color-bg-input)',
-                      color: 'var(--color-text-primary)',
-                      border: '1px solid var(--color-border)',
-                      padding: '4px 8px',
-                      borderRadius: 'var(--border-radius-sm)',
-                    }}
+                    className={styles.modeSelect}
                     value={sig.mode}
                     onChange={(e) => handleModeChange(sig.id, e.target.value as any)}
                   >
@@ -106,10 +117,10 @@ export const SmartSignals: React.FC = () => {
                     <option value="MANUAL_OVERRIDE">MANUAL_OVERRIDE</option>
                   </select>
                 </td>
-                <td style={{ padding: 'var(--space-4)' }}>
+                <td className={styles.cell}>
                   {sig.nsGreen}s / {sig.ewGreen}s
                 </td>
-                <td style={{ padding: 'var(--space-4)' }}>
+                <td className={styles.cell}>
                   {sig.recommendedNsGreen ? (
                     <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>
                       {sig.recommendedNsGreen}s / {sig.recommendedEwGreen}s
@@ -118,7 +129,7 @@ export const SmartSignals: React.FC = () => {
                     <span style={{ color: 'var(--color-text-muted)' }}>Optimal</span>
                   )}
                 </td>
-                <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
+                <td className={styles.cellRight}>
                   <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
                     {sig.recommendedNsGreen && (
                       <Button variant="primary" size="sm" onClick={() => handleApprove(sig.id)}>
@@ -142,7 +153,7 @@ export const SmartSignals: React.FC = () => {
         title={`Edit Signal Timing --- ${editSignal?.name}`}
       >
         {editSignal && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className={styles.modalContent}>
             <Input
               label="North-South Green Duration (Seconds)"
               type="number"

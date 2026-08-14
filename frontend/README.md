@@ -1,32 +1,97 @@
-# React + TypeScript + Vite
+# Smart Traffic Management System - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A state-of-the-art, real-time AI-powered urban traffic monitoring and signal optimization command center dashboard built with React 19, TypeScript, Vite, and CSS Modules.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Architecture & 30-Phase Implementation Summary
 
-## React Compiler
+The frontend application is structured across 30 implementation phases:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### **Phases 1 - 5: Base Engine & Design System Core**
+- Vite + React + TypeScript setup with Oxlint configuration.
+- Global design system design tokens (`tokens.css`, `reset.css`, `global.css`).
+- Custom CSS design system with HSL color palettes, dark glassmorphism, and responsive typography scale.
 
-## Expanding the Oxlint configuration
+### **Phases 6 - 10: Routing & Public / Authority Interfaces**
+- React Router v7 layout routing with public navigation (`PublicLayout`) and protected authority layout (`AuthorityLayout`).
+- Public Portal pages (`Home`, `LiveTraffic`, `RoutePlanner`, `ReportIncident`, `SmartParking`, `TrafficAssistant`).
+- Authority Command Center pages (`Dashboard`, `AIMonitoring`, `AIPredictions`, `SmartSignals`, `EmergencyControl`, `IncidentManagement`, `ExplainableAI`, `TrafficSimulator`, `Analytics`, `ImpactAnalysis`, `GovernmentData`, `Reports`, `Settings`).
+- Core UI component suite (`Button`, `Input`, `Dialog`, `Drawer`, `KPICard`, `TrafficStatusBadge`, `MapContainer`, `PredictionChart`).
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+### **Phases 11 - 15: Advanced UI & Testing Infrastructure**
+- Reusable `DataTable` with multi-column sorting and filtering.
+- Header `NotificationCenter` with real-time alert badges.
+- Vitest unit testing framework with JSDOM environment.
+- Role-based Access Control (`ProtectedRoute` and `AuthContext`).
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+### **Phases 16 - 20: Complete CSS Module Systems & API Layer**
+- Individual CSS Modules for all Authority pages (`Dashboard.module.css`, `AIMonitoring.module.css`, `AIPredictions.module.css`, `SmartSignals.module.css`, etc.).
+- Complete REST API integration services (`auth.ts`, `dashboard.ts`, `monitoring.ts`, `predictions.ts`, `signals.ts`, `incidents.ts`, `emergency.ts`, `routes.ts`, `traffic.ts`, `assistant.ts`).
+
+### **Phases 21 - 25: Authority Control Systems & Reporting**
+- **Phase 21**: Emergency Control green wave corridor overrides (`EmergencyControl.module.css` & `EmergencyControl.tsx`).
+- **Phase 22**: Incident Response & Officer Dispatch System (`IncidentManagement.module.css` & `IncidentManagement.tsx`).
+- **Phase 23**: Explainable AI evidence audit & Digital Twin Traffic Simulator (`ExplainableAI.module.css`, `TrafficSimulator.module.css`).
+- **Phase 24**: Analytics Suite, Civic Impact Scorecard, Government Data Integrations, and Executive Report Generator.
+- **Phase 25**: Command Center System Settings (`Settings.module.css`, `Settings.tsx`) with Radix UI tabs.
+
+### **Phases 26 - 30: Real-time Telemetry, Optimization & Production Readiness**
+- **Phase 26**: Vitest unit & integration test suite (`emergency.spec.tsx`, `incidents.spec.tsx`, `signals.spec.ts`).
+- **Phase 27**: Real-time WebSocket connection integration (`socketManager.ts`) for live signal updates and alerts.
+- **Phase 28**: React `ErrorBoundary` fallback UI and accessibility (a11y) polish.
+- **Phase 29**: Vite production bundle manual chunking (`manualChunks` for React, Recharts, Leaflet, Radix UI, Lucide icons).
+- **Phase 30**: End-to-end smoke test suite (`smokeTest.spec.ts`), complete production build verification (`npm run build`), and deployment readiness.
+
+---
+
+## 🛠️ Getting Started & Available Commands
+
+### Development Server
+```bash
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Typecheck & Compile
+```bash
+npx tsc -b
+```
+
+### Unit Tests
+```bash
+npx vitest run
+```
+
+### Production Build
+```bash
+npm run build
+```
+
+---
+
+## 📁 Directory Structure
+
+```
+frontend/
+├── src/
+│   ├── app/router/         # Router definitions & Lazy loading
+│   ├── assets/             # Images & static SVG assets
+│   ├── components/
+│   │   ├── charts/         # Recharts prediction charts
+│   │   ├── layout/         # PublicHeader, AuthoritySidebar, TopBar, Footer
+│   │   ├── maps/           # Leaflet interactive map containers
+│   │   └── ui/             # Button, Input, Dialog, Drawer, KPICard, DataTable, ErrorBoundary
+│   ├── config/             # Environment parameters & API URLs
+│   ├── features/auth/      # AuthContext & ProtectedRoute
+│   ├── pages/
+│   │   ├── authority/      # 12 Authority Command Center views
+│   │   └── public/         # 6 Public Commuter Portal views
+│   ├── services/
+│   │   ├── api/            # REST API client & service modules
+│   │   └── websocket/      # Socket.io gateway manager
+│   ├── styles/             # Global tokens, reset, typography
+│   ├── test/               # Vitest test suites & E2E smoke tests
+│   └── types/              # TypeScript models & interfaces
+├── package.json
+└── vite.config.ts
+```
