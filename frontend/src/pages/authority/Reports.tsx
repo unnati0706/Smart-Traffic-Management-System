@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileSpreadsheet, Download, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button/Button';
 import { Input } from '../../components/ui/Input/Input';
+import styles from './Reports.module.css';
 
 export const Reports: React.FC = () => {
   const [reportType, setReportType] = useState('CONGESTION_DAILY');
@@ -15,27 +16,36 @@ export const Reports: React.FC = () => {
 
     setTimeout(() => {
       setIsGenerating(false);
-      setDownloadUrl('report_export_2026_08.pdf');
+      setDownloadUrl(`report_export_${reportType.toLowerCase()}_2026_08.pdf`);
     }, 1200);
   };
 
+  const handleDownload = () => {
+    if (!downloadUrl) return;
+    const blob = new Blob(['Smart Traffic Management System - Official Report Content'], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = downloadUrl;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', maxWidth: '680px' }}>
-      <div>
-        <h1 style={{ fontSize: 'var(--font-size-title)', fontWeight: 'bold' }}>Authority Executive Report Generator</h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Authority Executive Report Generator</h1>
+        <p className={styles.subtitle}>
           Generate PDF and CSV operational reports for traffic performance and incident logs.
         </p>
       </div>
 
-      <div style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-md)', padding: 'var(--space-6)' }}>
-        <form onSubmit={handleGenerate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: 'var(--font-size-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
-              Report Category
-            </label>
+      <div className={styles.card}>
+        <form onSubmit={handleGenerate} className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label}>Report Category</label>
             <select
-              style={{ backgroundColor: 'var(--color-bg-input)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', padding: 'var(--space-3)', borderRadius: 'var(--border-radius-md)' }}
+              className={styles.select}
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
             >
@@ -46,9 +56,9 @@ export const Reports: React.FC = () => {
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+          <div className={styles.dateGrid}>
             <Input label="Start Date" type="date" defaultValue="2026-08-01" />
-            <Input label="End Date" type="date" defaultValue="2026-08-13" />
+            <Input label="End Date" type="date" defaultValue="2026-08-14" />
           </div>
 
           <Button type="submit" variant="primary" size="lg" disabled={isGenerating}>
@@ -57,15 +67,15 @@ export const Reports: React.FC = () => {
         </form>
 
         {downloadUrl && (
-          <div style={{ marginTop: 'var(--space-6)', backgroundColor: 'var(--color-bg-surface-hover)', border: '1px solid var(--color-status-normal)', borderRadius: 'var(--border-radius-sm)', padding: 'var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <div className={styles.successBox}>
+            <div className={styles.successInfo}>
               <CheckCircle2 color="var(--color-status-normal)" size={24} />
-              <div>
-                <strong>Report Generated Successfully</strong>
-                <div style={{ fontSize: 'var(--font-size-metadata)', color: 'var(--color-text-secondary)' }}>PDF & CSV formats ready</div>
+              <div className={styles.successText}>
+                <span className={styles.successTitle}>Report Generated Successfully</span>
+                <span className={styles.successDesc}>PDF & CSV formats compiled and ready</span>
               </div>
             </div>
-            <Button variant="primary" size="sm" onClick={() => alert('Download triggered!')}>
+            <Button variant="primary" size="sm" onClick={handleDownload}>
               <Download size={14} /> Download File
             </Button>
           </div>

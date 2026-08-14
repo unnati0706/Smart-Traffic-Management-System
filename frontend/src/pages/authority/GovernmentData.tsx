@@ -1,5 +1,7 @@
-import React from 'react';
-import { Database, CheckCircle, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Database, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Button } from '../../components/ui/Button/Button';
+import styles from './GovernmentData.module.css';
 
 interface DataSource {
   id: string;
@@ -10,42 +12,63 @@ interface DataSource {
   lastSync: string;
 }
 
-const SOURCES: DataSource[] = [
+const INITIAL_SOURCES: DataSource[] = [
   { id: 'ds-1', name: 'Municipal Camera Feed API', provider: 'City Traffic Police', type: 'REST / RTSP Stream', status: 'VERIFIED', lastSync: '10s ago' },
   { id: 'ds-2', name: 'OpenStreetMap & OSRM Engine', provider: 'OpenStreetMap Foundation', type: 'GeoJSON / OSRM', status: 'VERIFIED', lastSync: 'Live' },
   { id: 'ds-3', name: 'Smart Parking Sensor Gateway', provider: 'Civic IoT Infrastructure', type: 'MQTT / WebSocket', status: 'DEMO', lastSync: '1m ago' },
+  { id: 'ds-4', name: 'Emergency Vehicle GPS Dispatch API', provider: 'State Ambulance Network', type: 'Webhook / WebSocket', status: 'VERIFIED', lastSync: 'Just now' },
 ];
 
 export const GovernmentData: React.FC = () => {
+  const [sources, setSources] = useState<DataSource[]>(INITIAL_SOURCES);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncAll = () => {
+    setIsSyncing(true);
+    setTimeout(() => {
+      setSources((prev) =>
+        prev.map((s) => ({ ...s, lastSync: 'Just now' }))
+      );
+      setIsSyncing(false);
+    }, 1000);
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-      <div>
-        <h1 style={{ fontSize: 'var(--font-size-title)', fontWeight: 'bold' }}>Government & Open Data Integrations</h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-          Verified external API data sources, IoT gateways, and metadata status.
-        </p>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div>
+          <h1 className={styles.title}>Government & Open Data Integrations</h1>
+          <p className={styles.subtitle}>
+            Verified external API data sources, IoT gateways, and metadata status.
+          </p>
+        </div>
+
+        <Button variant="secondary" onClick={handleSyncAll} disabled={isSyncing}>
+          <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
+          {isSyncing ? 'Syncing Feeds...' : 'Sync Data Connectors'}
+        </Button>
       </div>
 
-      <div style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-md)', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-bg-surface-hover)', borderBottom: '1px solid var(--color-border)', fontSize: 'var(--font-size-label)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>
-              <th style={{ padding: 'var(--space-4)' }}>Data Source</th>
-              <th style={{ padding: 'var(--space-4)' }}>Provider</th>
-              <th style={{ padding: 'var(--space-4)' }}>Connector Type</th>
-              <th style={{ padding: 'var(--space-4)' }}>Last Sync</th>
-              <th style={{ padding: 'var(--space-4)', textAlign: 'right' }}>Verification Status</th>
+            <tr className={styles.tableHeader}>
+              <th className={styles.cell}>Data Source</th>
+              <th className={styles.cell}>Provider</th>
+              <th className={styles.cell}>Connector Type</th>
+              <th className={styles.cell}>Last Sync</th>
+              <th className={styles.cellRight}>Verification Status</th>
             </tr>
           </thead>
           <tbody>
-            {SOURCES.map((s) => (
-              <tr key={s.id} style={{ borderBottom: '1px solid var(--color-border-subtle)', fontSize: 'var(--font-size-table)' }}>
-                <td style={{ padding: 'var(--space-4)', fontWeight: 'bold' }}>{s.name}</td>
-                <td style={{ padding: 'var(--space-4)' }}>{s.provider}</td>
-                <td style={{ padding: 'var(--space-4)' }}>{s.type}</td>
-                <td style={{ padding: 'var(--space-4)' }}>{s.lastSync}</td>
-                <td style={{ padding: 'var(--space-4)', textAlign: 'right' }}>
-                  <span style={{ color: 'var(--color-status-normal)', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            {sources.map((s) => (
+              <tr key={s.id} className={styles.tableRow}>
+                <td className={styles.cell} style={{ fontWeight: 'bold' }}>{s.name}</td>
+                <td className={styles.cell}>{s.provider}</td>
+                <td className={styles.cell}>{s.type}</td>
+                <td className={styles.cell}>{s.lastSync}</td>
+                <td className={styles.cellRight}>
+                  <span className={s.status === 'VERIFIED' ? styles.statusVerified : styles.statusDemo}>
                     <ShieldCheck size={16} /> {s.status}
                   </span>
                 </td>
