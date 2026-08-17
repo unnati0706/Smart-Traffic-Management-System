@@ -1,0 +1,66 @@
+.topBar {
+  height: 64px;
+  background-color: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  sticky: top;
+  z-index: 90;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.wsIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--border-radius-full);
+  background-color: var(--color-bg-surface-hover);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.connected {
+  background-color: var(--color-status-normal);
+  box-shadow: 0 0 6px var(--color-status-normal);
+}
+
+.disconnected {
+  background-color: var(--color-status-severe);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+.userName {
+  font-size: var(--font-size-table);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.roleBadge {
+  font-size: var(--font-size-label);
+  color: var(--color-primary);
+  background-color: var(--color-primary-subtle);
+  padding: 2px var(--space-2);
+  border-radius: var(--border-radius-sm);
+}

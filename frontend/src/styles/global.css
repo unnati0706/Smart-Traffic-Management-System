@@ -1,0 +1,54 @@
+@import "./tokens.css";
+@import "./reset.css";
+@import "leaflet/dist/leaflet.css";
+
+/* Scrollbar customization for command center screens */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-surface-hover);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Custom Leaflet Map styling to fit command center dark aesthetics */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg-app) !important;
+  font-family: var(--font-family-base) !important;
+}
+
+.leaflet-control-container .leaflet-routing-container-hide {
+  display: none;
+}
+
+.dark-tile-layer {
+  filter: brightness(0.7) invert(1) contrast(1.2) hue-rotate(200deg) saturate(0.3);
+}
+
+/* Demo Data Badge styling */
+.demo-data-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
